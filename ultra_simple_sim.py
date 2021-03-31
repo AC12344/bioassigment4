@@ -57,7 +57,28 @@ def distCal(RinX,RinY, NinX, NinY):
     if dy > 0.5*ARENA_SIDE_LENGTH:
         dy = ARENA_SIDE_LENGTH - dy
 
-    return np.sqrt(dx**2 + dy**2)
+    dist = np.sqrt(dx**2 + dy**2)
+    return dx, dy, dist
+
+def correctWarp(RinX, RinY,NinX,NinY):
+    dy = NinY - RinY
+    dx = NinX - RinX
+    
+    if dx > 0.5*ARENA_SIDE_LENGTH:
+        dx  = NinX - ARENA_SIDE_LENGTH
+    elif dx < -0.5*ARENA_SIDE_LENGTH:
+        dx = NinX + ARENA_SIDE_LENGTH
+    else:
+        dx = NinX
+    if dy > 0.5*ARENA_SIDE_LENGTH:
+        dy  = NinY - ARENA_SIDE_LENGTH
+    elif dy < -0.5*ARENA_SIDE_LENGTH:
+        dy = NinY + ARENA_SIDE_LENGTH
+    else:
+        dy = NinY
+
+    return dx, dy
+
 
 def seperation():
     global xs, ys, vys, vxs
@@ -68,15 +89,15 @@ def seperation():
         seperation_facy = 0
         count = 1
         for j in range(NUMBER_OF_ROBOTS):
-            dist = distCal(x[i],y[i],x[j],y[j])
+            dx,dy,dist = distCal(x[i],y[i],x[j],y[j])
             if i != j and dist < radius:
                 count += 1
                 if dist == 0:
                     seperation_facx += MAX_SPEED
                     seperation_facy += MAX_SPEED
                 else:
-                    seperation_facx += (x[i] - x[j])/dist
-                    seperation_facy += (y[i] - y[j])/dist
+                    seperation_facx += (dx)/dist
+                    seperation_facy += (dy)/dist
                     
         seperation_fac.append([seperation_facx/(count), seperation_facy/(count)])
     return seperation_fac
@@ -89,11 +110,12 @@ def cohesion():
         cohesion_facy = 0
         count = 0
         for j in range(NUMBER_OF_ROBOTS):
-            dist = distCal(x[i], y[i], x[j],y[j])
+            _,_,dist = distCal(x[i], y[i], x[j],y[j])
             #print(dist)
             if dist < radius:
-                cohesion_facx += x[j]
-                cohesion_facy += y[j]
+                dx,dy = correctWarp(x[i],y[i],x[j],y[j])
+                cohesion_facx += dx
+                cohesion_facy += dy
                 count +=1
         
         cohesion_fac.append([x[i]-cohesion_facx/count,y[i] - cohesion_facy/count])
@@ -110,7 +132,7 @@ def alligement():
         al_facy = 0
         count = 0
         for j in range(NUMBER_OF_ROBOTS):
-            dist = distCal(x[i], y[i], x[j],y[j])
+            _,_,dist = distCal(x[i], y[i], x[j],y[j])
             if dist < radius:
                 al_facx += vx[j]
                 al_facy += vy[j]
@@ -156,8 +178,8 @@ def updateVel(spe_fac, coh_fac,al_fac):
         vy_a = vy_a/vy_a_max*MAX_SPEED
     else:
         vy_a = vy_a*MAX_SPEED
-    vx = 1*vx_s + 1*vx_c + 1*vx_a 
-    vy = 1*vy_s + 1*vy_c + 1*vy_a
+    vx = 2*vx_s + 1*vx_c + 1*vx_a 
+    vy = 2*vy_s + 1*vy_c + 1*vy_a
     
     return vx, vy
 
