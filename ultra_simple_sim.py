@@ -10,7 +10,7 @@ NUMBER_OF_ROBOTS  = 50
 STEPS             = 500
 MAX_SPEED         = 0.1
 
-radius = 2
+radius = 3
 
 # Positions
 x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
@@ -40,6 +40,18 @@ def animate(i):
     cohe_fac = cohesion()
     al_fac = alligement()
     vx, vy = updateVel(spe_fac, cohe_fac,al_fac)
+   # vx += dvx
+   # vy += dvy
+   # for num in range(NUMBER_OF_ROBOTS):
+   #     if vx[num] > MAX_SPEED:
+   #         vx[num] = MAX_SPEED
+   #     if vx[num] < -MAX_SPEED:
+   #         vx[num] = -MAX_SPEED
+   #     if vy[num] > MAX_SPEED:
+   #         vy[num] = MAX_SPEED
+   #     if vy[num] < -MAX_SPEED:
+   #         vy[num] = -MAX_SPEED
+
     x = np.array(list(map(wrap, x + vx)))
     y = np.array(list(map(wrap, y + vy)))
     
@@ -89,15 +101,16 @@ def seperation():
         seperation_facy = 0
         count = 1
         for j in range(NUMBER_OF_ROBOTS):
-            dx,dy,dist = distCal(x[i],y[i],x[j],y[j])
+            _,_,dist = distCal(x[i],y[i],x[j],y[j])
             if i != j and dist < radius:
                 count += 1
                 if dist == 0:
-                    seperation_facx += MAX_SPEED
-                    seperation_facy += MAX_SPEED
+                    seperation_facx += np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=1)  
+                    seperation_facy += np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=1)
                 else:
-                    seperation_facx += (dx)/dist
-                    seperation_facy += (dy)/dist
+                    dx,dy = correctWarp(x[i],x[j],y[i],y[j])
+                    seperation_facx += 1/(x[i]-dx)
+                    seperation_facy += 1/(y[i]-dy)
                     
         seperation_fac.append([seperation_facx/(count), seperation_facy/(count)])
     return seperation_fac
@@ -149,11 +162,13 @@ def updateVel(spe_fac, coh_fac,al_fac):
     if vx_s_max != 0:
         vx_s = vx_s/vx_s_max*MAX_SPEED
     else:
-        vx_s = 0.1*MAX_SPEED
+        vx_s = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
+
     if vy_s_max != 0:
         vy_s = vy_s / vy_s_max * MAX_SPEED
     else:
-        vy_s = 0.1*MAX_SPEED
+        vy_s = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
+    
     vx_c = np.array(coh_fac)[:,0]
     vy_c = np.array(coh_fac)[:,1]
     vx_c_max = np.max(np.linalg.norm(coh_fac))
@@ -161,11 +176,14 @@ def updateVel(spe_fac, coh_fac,al_fac):
     if vy_c_max != 0:
         vx_c = vx_c/vx_c_max*MAX_SPEED
     else:
-        vx_c = vx_c*MAX_SPEED
+        vx_c = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)        
+        #vx_c = vx_c*MAX_SPEED
     if vy_c_max != 0:
         vy_c = vy_c/vy_c_max*MAX_SPEED
     else:
-        vy_c = vy_c*MAX_SPEED
+        vy_c = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
+        #vy_c = vy_c*MAX_SPEED
+    
     vx_a = np.array(al_fac)[:,0]
     vy_a = np.array(al_fac)[:,1]
     vx_a_max = np.max(np.linalg.norm(al_fac))
@@ -173,15 +191,17 @@ def updateVel(spe_fac, coh_fac,al_fac):
     if vx_a_max != 0:
         vx_a = vx_a/vx_a_max*MAX_SPEED
     else:
-        vx_a = vx_a*MAX_SPEED
+        vx_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)        
+        #vx_a = vx_a*MAX_SPEED
     if vy_a_max != 0:
         vy_a = vy_a/vy_a_max*MAX_SPEED
     else:
-        vy_a = vy_a*MAX_SPEED
-    vx = 2*vx_s + 1*vx_c + 1*vx_a 
-    vy = 2*vy_s + 1*vy_c + 1*vy_a
+        vy_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
+        #vy_a = vy_a*MAX_SPEED
+    dvx = 2.5*vx_s +  1*vx_a 
+    dvy = 2.5*vy_s +  1*vy_a
     
-    return vx, vy
+    return dvx, dvy
 
 anim = FuncAnimation(fig, animate, init_func=init,
                                frames=STEPS, interval=1, blit=True)
