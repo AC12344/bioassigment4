@@ -48,6 +48,17 @@ def animate(i):
     
     return points,
 
+def distCal(RinX,RinY, NinX, NinY):
+    dy = abs(NinY - RinY)
+    dx = abs(NinX - RinX)
+
+    if dx > 0.5*ARENA_SIDE_LENGTH:
+        dx = ARENA_SIDE_LENGTH - dx
+    if dy > 0.5*ARENA_SIDE_LENGTH:
+        dy = ARENA_SIDE_LENGTH - dy
+
+    return np.sqrt(dx**2 + dy**2)
+
 def seperation():
     global xs, ys, vys, vxs
     dist = 0
@@ -57,7 +68,7 @@ def seperation():
         seperation_facy = 0
         count = 1
         for j in range(NUMBER_OF_ROBOTS):
-            dist = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+            dist = distCal(x[i],y[i],x[j],y[j])
             if i != j and dist < radius:
                 count += 1
                 if dist == 0:
@@ -66,7 +77,7 @@ def seperation():
                 else:
                     seperation_facx += (x[i] - x[j])/dist
                     seperation_facy += (y[i] - y[j])/dist
-
+                    
         seperation_fac.append([seperation_facx/(count), seperation_facy/(count)])
     return seperation_fac
 
@@ -78,7 +89,7 @@ def cohesion():
         cohesion_facy = 0
         count = 0
         for j in range(NUMBER_OF_ROBOTS):
-            dist = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+            dist = distCal(x[i], y[i], x[j],y[j])
             #print(dist)
             if dist < radius:
                 cohesion_facx += x[j]
@@ -99,7 +110,7 @@ def alligement():
         al_facy = 0
         count = 0
         for j in range(NUMBER_OF_ROBOTS):
-            dist = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+            dist = distCal(x[i], y[i], x[j],y[j])
             if dist < radius:
                 al_facx += vx[j]
                 al_facy += vy[j]
@@ -145,8 +156,8 @@ def updateVel(spe_fac, coh_fac,al_fac):
         vy_a = vy_a/vy_a_max*MAX_SPEED
     else:
         vy_a = vy_a*MAX_SPEED
-    vx = 1*vx_s + 1*vx_c + 2*vx_a 
-    vy = 1*vy_s + 1*vy_c + 2*vy_a
+    vx = 1*vx_s + 1*vx_c + 1*vx_a 
+    vy = 1*vy_s + 1*vy_c + 1*vy_a
     
     return vx, vy
 
