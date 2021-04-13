@@ -6,11 +6,11 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('seaborn-pastel')
 
 ARENA_SIDE_LENGTH = 10
-NUMBER_OF_ROBOTS  = 50
+NUMBER_OF_ROBOTS  = 30
 STEPS             = 500
 MAX_SPEED         = 0.1
 
-radius = 3
+radius = 1
 
 # Positions
 x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
@@ -130,8 +130,7 @@ def cohesion():
                 cohesion_facx += dx
                 cohesion_facy += dy
                 count +=1
-        
-        cohesion_fac.append([x[i]-cohesion_facx/count,y[i] - cohesion_facy/count])
+        cohesion_fac.append([cohesion_facx/count- x[i],cohesion_facy/count - y[i]])
        # print("X : %f " % x[i])
        # print("Y : %f " % y[i])
        # print(cohesion_fac[i])
@@ -198,8 +197,8 @@ def updateVel(spe_fac, coh_fac,al_fac):
     else:
         vy_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
         #vy_a = vy_a*MAX_SPEED
-    dvx = 1*vx_s + vx_a + vx_c
-    dvy = 1*vy_s + vy_a + vy_c
+    dvx =  vx_s + 1*vx_c + vx_a
+    dvy =  vy_s + 1*vy_c + vy_a
     
     return dvx, dvy
 
