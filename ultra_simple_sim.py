@@ -108,11 +108,11 @@ def seperation():
                     seperation_facx += np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=1)  
                     seperation_facy += np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=1)
                 else:
-                    dx,dy = correctWarp(x[i],x[j],y[i],y[j])
+                    dx,dy = correctWarp(x[i],y[i],x[j],y[j])
                     seperation_facx += 1/(x[i]-dx)
                     seperation_facy += 1/(y[i]-dy)
                     
-        seperation_fac.append([seperation_facx/(count), seperation_facy/(count)])
+        seperation_fac.append([seperation_facx/count, seperation_facy/count])
     return seperation_fac
 
 def cohesion():
@@ -198,8 +198,8 @@ def updateVel(spe_fac, coh_fac,al_fac):
     else:
         vy_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
         #vy_a = vy_a*MAX_SPEED
-    dvx = 2.5*vx_s +  1*vx_a 
-    dvy = 2.5*vy_s +  1*vy_a
+    dvx = 1*vx_s + vx_a + vx_c
+    dvy = 1*vy_s + vy_a + vy_c
     
     return dvx, dvy
 
