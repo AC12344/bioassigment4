@@ -7,10 +7,10 @@ plt.style.use('seaborn-pastel')
 
 ARENA_SIDE_LENGTH = 10
 NUMBER_OF_ROBOTS  = 30
-STEPS             = 500
+STEPS             = 100
 MAX_SPEED         = 0.1
 
-radius = 1
+radius = 1.5
 
 # Positions
 x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
@@ -24,6 +24,11 @@ vy = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=(NUMBER_OF_ROBOTS,))
 fig = plt.figure(figsize=(10.24, 7.68), dpi=100)
 ax = plt.axes(xlim=(0, ARENA_SIDE_LENGTH), ylim=(0, ARENA_SIDE_LENGTH))
 points, = ax.plot([], [], 'bo', lw=0, )
+circle = plt.Circle((x[0],y[0]), radius, fill = False)
+#patches = [plt.Circle((x[i],y[i]),radius, fill=False) for i in range(NUMBER_OF_ROBOTS)]
+ax.add_patch(circle)
+#for patch in patches:
+#    ax.add_patch(patch)
 
 
 # Make the environment toroidal 
@@ -56,8 +61,12 @@ def animate(i):
     y = np.array(list(map(wrap, y + vy)))
     
     points.set_data(x, y)
+    print(points)
+    points.set_color('red')
     print('Step ', i + 1, '/', STEPS, end='\r')
-    
+    #for i in range(NUMBER_OF_ROBOTS):
+    #    patches[i].center = (x[i],y[i])
+    circle.center = (x[0],y[0])
     return points,
 
 def distCal(RinX,RinY, NinX, NinY):
@@ -197,8 +206,8 @@ def updateVel(spe_fac, coh_fac,al_fac):
     else:
         vy_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
         #vy_a = vy_a*MAX_SPEED
-    dvx =  vx_s + 1*vx_c + vx_a
-    dvy =  vy_s + 1*vy_c + vy_a
+    dvx =  vx_s + 1*vx_c + 1*vx_a
+    dvy =  vy_s + 1*vy_c + 1*vy_a
     
     return dvx, dvy
 
