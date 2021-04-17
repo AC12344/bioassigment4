@@ -24,11 +24,12 @@ vy = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=(NUMBER_OF_ROBOTS,))
 fig = plt.figure(figsize=(10.24, 7.68), dpi=100)
 ax = plt.axes(xlim=(0, ARENA_SIDE_LENGTH), ylim=(0, ARENA_SIDE_LENGTH))
 points, = ax.plot([], [], 'bo', lw=0, )
-circle = plt.Circle((x[0],y[0]), radius, fill = False)
-#patches = [plt.Circle((x[i],y[i]),radius, fill=False) for i in range(NUMBER_OF_ROBOTS)]
-ax.add_patch(circle)
-#for patch in patches:
-#    ax.add_patch(patch)
+
+#circle = plt.Circle((x[0],y[0]), radius, fill = False)
+#ax.add_patch(circle)
+patches = [plt.Circle((x[i],y[i]),0.15, fill=True) for i in range(NUMBER_OF_ROBOTS)]
+for patch in patches:
+    ax.add_patch(patch)
 
 
 # Make the environment toroidal 
@@ -56,17 +57,20 @@ def animate(i):
    #         vy[num] = MAX_SPEED
    #     if vy[num] < -MAX_SPEED:
    #         vy[num] = -MAX_SPEED
-
     x = np.array(list(map(wrap, x + vx)))
     y = np.array(list(map(wrap, y + vy)))
     
     points.set_data(x, y)
-    print(points)
-    points.set_color('red')
+    #points.set_color('red')
     print('Step ', i + 1, '/', STEPS, end='\r')
-    #for i in range(NUMBER_OF_ROBOTS):
-    #    patches[i].center = (x[i],y[i])
-    circle.center = (x[0],y[0])
+    for i in range(NUMBER_OF_ROBOTS):
+        patches[i].center = (x[i],y[i])
+        patches[i].set_visible(False)
+    patches[0].set_visible(True)
+    patches[0].set_color('red')
+
+    #circle.center = (x[0],y[0])
+    #circle.set_visible(False)
     return points,
 
 def distCal(RinX,RinY, NinX, NinY):
