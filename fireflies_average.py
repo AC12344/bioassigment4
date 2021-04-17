@@ -233,7 +233,20 @@ def updateVel(spe_fac, coh_fac,al_fac):
 
 first_seen_sum = 0
 times_sync = 0
-for it in range(10):
+for it in range(3):
+    # Positions
+    x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
+    y = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
+
+    # Velocities
+    vx = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=(NUMBER_OF_ROBOTS,))
+    vy = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=(NUMBER_OF_ROBOTS,))
+    fireflies = np.random.uniform(low=0, high=1, size=(NUMBER_OF_ROBOTS,))
+    flashes = []
+    for i in range(NUMBER_OF_ROBOTS):
+        flashes.append(0)
+    # visualize firefly synchronization
+    values = np.zeros((STEPS,NUMBER_OF_ROBOTS))
     print(it)
     anim = FuncAnimation(fig, animate, init_func=init,
                                 frames=STEPS, interval=1, blit=True)
