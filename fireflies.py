@@ -7,10 +7,12 @@ plt.style.use('seaborn-pastel')
 
 ARENA_SIDE_LENGTH = 10
 NUMBER_OF_ROBOTS  = 30
-STEPS             = 100
+STEPS             = 5000
 MAX_SPEED         = 0.1
 
 radius = 1.5
+# firefly coupling constant
+epsilon = 0.1
 
 # Positions
 x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
@@ -30,6 +32,12 @@ points, = ax.plot([], [], 'bo', lw=0, )
 patches = [plt.Circle((x[i],y[i]),0.15, fill=True) for i in range(NUMBER_OF_ROBOTS)]
 for patch in patches:
     ax.add_patch(patch)
+    patch.set_color('red')
+    patch.set_visible(False)
+fireflies = np.random.uniform(low=0, high=1, size=(NUMBER_OF_ROBOTS,))
+flashes = []
+for i in range(NUMBER_OF_ROBOTS):
+    flashes.append(0)
 
 
 # Make the environment toroidal 
@@ -46,32 +54,36 @@ def animate(i):
     cohe_fac = cohesion()
     al_fac = alligement()
     vx, vy = updateVel(spe_fac, cohe_fac,al_fac)
-   # vx += dvx
-   # vy += dvy
-   # for num in range(NUMBER_OF_ROBOTS):
-   #     if vx[num] > MAX_SPEED:
-   #         vx[num] = MAX_SPEED
-   #     if vx[num] < -MAX_SPEED:
-   #         vx[num] = -MAX_SPEED
-   #     if vy[num] > MAX_SPEED:
-   #         vy[num] = MAX_SPEED
-   #     if vy[num] < -MAX_SPEED:
-   #         vy[num] = -MAX_SPEED
     x = np.array(list(map(wrap, x + vx)))
     y = np.array(list(map(wrap, y + vy)))
     
     points.set_data(x, y)
-    #points.set_color('red')
     print('Step ', i + 1, '/', STEPS, end='\r')
+    synchronize()
     for i in range(NUMBER_OF_ROBOTS):
-        patches[i].center = (x[i],y[i])
-        patches[i].set_visible(False)
-    patches[0].set_visible(True)
-    patches[0].set_color('red')
+        if fireflies[i] >= 1:
+            patches[i].center = (x[i],y[i])
+            patches[i].set_visible(True)
+            flashes[i] = 1
+            fireflies[i] = 0
+        else:
+            patches[i].center = (x[i],y[i])
+            patches[i].set_visible(False)
+            flashes[i] = 0
 
     #circle.center = (x[0],y[0])
     #circle.set_visible(False)
     return points,
+
+def synchronize():
+    for i in range(NUMBER_OF_ROBOTS):
+        count = 0
+        for j in range(NUMBER_OF_ROBOTS):
+            _,_,dist = distCal(x[i],y[i],x[j],y[j])
+            if i != j and dist < radius:
+                if flashes[j] == 1:
+                    count += 1
+        fireflies[i] = fireflies[i] + 1/50 + epsilon*count*fireflies[i]
 
 def distCal(RinX,RinY, NinX, NinY):
     dy = abs(NinY - RinY)
