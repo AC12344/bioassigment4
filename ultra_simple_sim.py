@@ -6,8 +6,8 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('seaborn-pastel')
 
 ARENA_SIDE_LENGTH = 10
-NUMBER_OF_ROBOTS  = 30
-STEPS             = 100
+NUMBER_OF_ROBOTS  = 50
+STEPS             = 3000
 MAX_SPEED         = 0.1
 
 radius = 1.5
@@ -25,8 +25,6 @@ fig = plt.figure(figsize=(10.24, 7.68), dpi=100)
 ax = plt.axes(xlim=(0, ARENA_SIDE_LENGTH), ylim=(0, ARENA_SIDE_LENGTH))
 points, = ax.plot([], [], 'bo', lw=0, )
 
-#circle = plt.Circle((x[0],y[0]), radius, fill = False)
-#ax.add_patch(circle)
 patches = [plt.Circle((x[i],y[i]),0.15, fill=True) for i in range(NUMBER_OF_ROBOTS)]
 for patch in patches:
     ax.add_patch(patch)
@@ -46,22 +44,9 @@ def animate(i):
     cohe_fac = cohesion()
     al_fac = alligement()
     vx, vy = updateVel(spe_fac, cohe_fac,al_fac)
-   # vx += dvx
-   # vy += dvy
-   # for num in range(NUMBER_OF_ROBOTS):
-   #     if vx[num] > MAX_SPEED:
-   #         vx[num] = MAX_SPEED
-   #     if vx[num] < -MAX_SPEED:
-   #         vx[num] = -MAX_SPEED
-   #     if vy[num] > MAX_SPEED:
-   #         vy[num] = MAX_SPEED
-   #     if vy[num] < -MAX_SPEED:
-   #         vy[num] = -MAX_SPEED
     x = np.array(list(map(wrap, x + vx)))
     y = np.array(list(map(wrap, y + vy)))
-    
     points.set_data(x, y)
-    #points.set_color('red')
     print('Step ', i + 1, '/', STEPS, end='\r')
     for i in range(NUMBER_OF_ROBOTS):
         patches[i].center = (x[i],y[i])
@@ -69,8 +54,6 @@ def animate(i):
     patches[0].set_visible(True)
     patches[0].set_color('red')
 
-    #circle.center = (x[0],y[0])
-    #circle.set_visible(False)
     return points,
 
 def distCal(RinX,RinY, NinX, NinY):
@@ -137,21 +120,16 @@ def cohesion():
         count = 0
         for j in range(NUMBER_OF_ROBOTS):
             _,_,dist = distCal(x[i], y[i], x[j],y[j])
-            #print(dist)
             if dist < radius:
                 dx,dy = correctWarp(x[i],y[i],x[j],y[j])
                 cohesion_facx += dx
                 cohesion_facy += dy
                 count +=1
         cohesion_fac.append([cohesion_facx/count- x[i],cohesion_facy/count - y[i]])
-       # print("X : %f " % x[i])
-       # print("Y : %f " % y[i])
-       # print(cohesion_fac[i])
     return cohesion_fac
 
 def alligement():
     al_fac = []
-    
     for i in range(NUMBER_OF_ROBOTS):
         al_facx = 0
         al_facy = 0
@@ -166,7 +144,6 @@ def alligement():
     return al_fac
 
 def updateVel(spe_fac, coh_fac,al_fac):
-    
     vx_s = np.array(spe_fac)[:,0]
     vy_s = np.array(spe_fac)[:,1]
     vx_s_max = np.max(np.linalg.norm(spe_fac))
@@ -189,12 +166,10 @@ def updateVel(spe_fac, coh_fac,al_fac):
         vx_c = vx_c/vx_c_max*MAX_SPEED
     else:
         vx_c = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)        
-        #vx_c = vx_c*MAX_SPEED
     if vy_c_max != 0:
         vy_c = vy_c/vy_c_max*MAX_SPEED
     else:
         vy_c = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
-        #vy_c = vy_c*MAX_SPEED
     
     vx_a = np.array(al_fac)[:,0]
     vy_a = np.array(al_fac)[:,1]
@@ -204,12 +179,10 @@ def updateVel(spe_fac, coh_fac,al_fac):
         vx_a = vx_a/vx_a_max*MAX_SPEED
     else:
         vx_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)        
-        #vx_a = vx_a*MAX_SPEED
     if vy_a_max != 0:
         vy_a = vy_a/vy_a_max*MAX_SPEED
     else:
         vy_a = np.random.uniform(low=-MAX_SPEED, high=MAX_SPEED, size=NUMBER_OF_ROBOTS,)
-        #vy_a = vy_a*MAX_SPEED
     dvx =  vx_s + 1*vx_c + 1*vx_a
     dvy =  vy_s + 1*vy_c + 1*vy_a
     
@@ -218,4 +191,4 @@ def updateVel(spe_fac, coh_fac,al_fac):
 anim = FuncAnimation(fig, animate, init_func=init,
                                frames=STEPS, interval=1, blit=True)
 writervideo = animation.FFMpegWriter(fps=60)
-anim.save("output.mp4", writer=writervideo)
+anim.save("output_boid.mp4", writer=writervideo)

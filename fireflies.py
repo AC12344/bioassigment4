@@ -6,13 +6,13 @@ from matplotlib.animation import FuncAnimation
 plt.style.use('seaborn-pastel')
 
 ARENA_SIDE_LENGTH = 10
-NUMBER_OF_ROBOTS  = 30
-STEPS             = 5000
+NUMBER_OF_ROBOTS  = 50
+STEPS             = 3000
 MAX_SPEED         = 0.1
 
 radius = 1.5
 # firefly coupling constant
-epsilon = 0.1
+epsilon = 0.05
 
 # Positions
 x = np.random.uniform(low=0, high=ARENA_SIDE_LENGTH, size=(NUMBER_OF_ROBOTS,))
@@ -39,6 +39,9 @@ flashes = []
 for i in range(NUMBER_OF_ROBOTS):
     flashes.append(0)
 
+# visualize firefly synchronization
+values = np.zeros((STEPS,NUMBER_OF_ROBOTS))
+
 
 # Make the environment toroidal 
 def wrap(z):    
@@ -60,19 +63,18 @@ def animate(i):
     points.set_data(x, y)
     print('Step ', i + 1, '/', STEPS, end='\r')
     synchronize()
-    for i in range(NUMBER_OF_ROBOTS):
-        if fireflies[i] >= 1:
-            patches[i].center = (x[i],y[i])
-            patches[i].set_visible(True)
-            flashes[i] = 1
-            fireflies[i] = 0
+    values[i,:] = fireflies
+    for j in range(NUMBER_OF_ROBOTS):
+        if fireflies[j] >= 1:
+            patches[j].center = (x[j],y[j])
+            patches[j].set_visible(True)
+            flashes[j] += 1
+            if flashes[j] == 8:
+                fireflies[j] = 0
         else:
-            patches[i].center = (x[i],y[i])
-            patches[i].set_visible(False)
-            flashes[i] = 0
-
-    #circle.center = (x[0],y[0])
-    #circle.set_visible(False)
+            patches[j].center = (x[j],y[j])
+            patches[j].set_visible(False)
+            flashes[j] = 0
     return points,
 
 def synchronize():
@@ -81,9 +83,11 @@ def synchronize():
         for j in range(NUMBER_OF_ROBOTS):
             _,_,dist = distCal(x[i],y[i],x[j],y[j])
             if i != j and dist < radius:
-                if flashes[j] == 1:
+                if flashes[j] >= 1:
                     count += 1
-        fireflies[i] = fireflies[i] + 1/50 + epsilon*count*fireflies[i]
+        fireflies[i] = fireflies[i] + 1/60 + epsilon*count*fireflies[i]
+        if fireflies[i] > 1:
+            fireflies[i] = 1
 
 def distCal(RinX,RinY, NinX, NinY):
     dy = abs(NinY - RinY)
@@ -230,4 +234,19 @@ def updateVel(spe_fac, coh_fac,al_fac):
 anim = FuncAnimation(fig, animate, init_func=init,
                                frames=STEPS, interval=1, blit=True)
 writervideo = animation.FFMpegWriter(fps=60)
-anim.save("output.mp4", writer=writervideo)
+anim.save("output_sync.mp4", writer=writervideo)
+
+first_seen = 0
+for n in range(STEPS):
+    count = 0
+    for m in range(NUMBER_OF_ROBOTS):
+        if values[n,m] >= 1:
+            count += 1
+    if count == NUMBER_OF_ROBOTS and first_seen == 0:
+        first_seen = n
+
+print(first_seen)
+plt.figure(2)
+plt.plot(np.arange(STEPS), values)
+plt.vlines(first_seen, 0, 1.5, colors='black', linestyles='dashed')
+plt.savefig('synchronize.jpg')
